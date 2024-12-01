@@ -1,25 +1,50 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Dropdown from './components/Dropdown';
+import DynamicForm from './components/DynamicForm';
+import ProgressBar from './components/ProgressBar';
+import SubmittedDataTable from './components/SubmittedDataTable';
+import { fetchFormStructure } from './utils/api';
 
-function App() {
+const App = () => {
+  const [formStructure, setFormStructure] = useState(null);
+  const [submittedData, setSubmittedData] = useState([]);
+  const [progress, setProgress] = useState(0);
+
+  const handleDropdownChange = async (selection) => {
+    try {
+      const structure = await fetchFormStructure(selection);
+      setFormStructure(structure);
+      setProgress(0); // Reset progress for the new form
+    } catch (error) {
+      console.error('Error fetching form structure:', error);
+    }
+  };
+
+  const handleFormSubmit = (data) => {
+    setSubmittedData((prevData) => [...prevData, data]);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Header />
+      <Dropdown onSelectionChange={handleDropdownChange} />
+      <ProgressBar progress={progress} />
+      {formStructure && (
+        <DynamicForm
+          formStructure={formStructure}
+          onSubmit={handleFormSubmit}
+          setProgress={setProgress}
+        />
+      )}
+      <SubmittedDataTable
+        data={submittedData}
+        setSubmittedData={setSubmittedData}
+      />
+      <Footer />
     </div>
   );
-}
+};
 
 export default App;
